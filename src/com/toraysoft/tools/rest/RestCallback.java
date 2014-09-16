@@ -22,4 +22,8 @@ public class RestCallback {
 		public void onErrorResponse(VolleyError error);
 	}
 
+	public interface OnHostErrorCallback {
+		public void onChangHost(String url);
+	}
+
 }

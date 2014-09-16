@@ -8,6 +8,7 @@ import org.json.JSONObject;
 
 import android.content.Context;
 
+import com.toraysoft.tools.rest.RestCallback.OnHostErrorCallback;
 import com.toraysoft.tools.rest.RestCallback.OnRestCallback;
 import com.toraysoft.tools.rest.RestParameter.REQUEST_METHOD;
 import com.toraysoft.tools.rest.cache.CacheUtil;
@@ -20,19 +21,24 @@ public class RestClient {
 	private RestHeader mRestHeader;
 	private ImageUtil mImageUtil;
 	private RestRequest mRestRequest;
-	private String restHost = "";
+	private String host;
+	private OnHostErrorCallback mOnHostErrorCallback = null;
 
 	private RestClient() {
 
 	}
 
-	public RestClient(Context ctx, String hostName) {
+	public RestClient(Context ctx, OnHostErrorCallback l) {
 		mContext = ctx;
-		restHost = hostName;
 		mRestHeader = new RestHeader();
 		mRestRequest = new RestRequest(ctx, this);
 		mCacheUtil = new CacheUtil();
 		mImageUtil = new ImageUtil(this);
+		this.mOnHostErrorCallback = l;
+	}
+
+	public void setRestHost(String host) {
+		this.host = host;
 	}
 
 	public void initCacheDir(File cacheDir) {
@@ -76,8 +82,12 @@ public class RestClient {
 		return mRestHeader;
 	}
 
-	public String getRestHost() {
-		return restHost;
+	public String getRestClientHost() {
+		return host;
+	}
+
+	public OnHostErrorCallback getHostErrorListener() {
+		return mOnHostErrorCallback;
 	}
 
 	// doGet with normal header, none param
@@ -89,7 +99,7 @@ public class RestClient {
 	public void doGet(Map<String, String> headers, String url, OnRestCallback l) {
 		doGet(headers, null, url, l);
 	}
-	
+
 	// doPost with normal header,none param
 	public void doPost(String url, OnRestCallback l) {
 		doPost(null, null, url, l);

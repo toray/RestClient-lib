@@ -14,6 +14,7 @@ import android.text.TextUtils;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.NoConnectionError;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.Response.ErrorListener;
@@ -110,7 +111,7 @@ public class RestRequest {
 	}
 
 	private void doMethod(int method, Map<String, String> headers,
-			Object param, String url, final RequestListener<String> l) {
+			Object param, final String url, final RequestListener<String> l) {
 		ExStringRequest stringRequest = new ExStringRequest(method, url,
 				new Response.Listener<String>() {
 
@@ -124,6 +125,12 @@ public class RestRequest {
 
 					@Override
 					public void onErrorResponse(VolleyError error) {
+						if (error instanceof NoConnectionError) {
+							if (mRestClient.getHostErrorListener() != null) {
+								mRestClient.getHostErrorListener().onChangHost(
+										url);
+							}
+						}
 						if (l != null) {
 							l.onErrorResponse(error);
 						}
@@ -168,7 +175,7 @@ public class RestRequest {
 
 	public void doMethodHelper(int method, Map<String, String> headers,
 			Object param, String url, final OnRestCallback l) {
-		url = mRestClient.getRestHost() + url;
+		url = mRestClient.getRestClientHost() + url;
 		boolean isFirstPage = url.contains(PRE_CACHE);
 		final String cacheKey = url.hashCode() + "";
 		if (isFirstPage) {
