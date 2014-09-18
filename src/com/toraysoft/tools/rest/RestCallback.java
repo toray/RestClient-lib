@@ -12,7 +12,6 @@ public class RestCallback {
 
 		public void onError(String errmsg);
 
-		public void onFail();
 	}
 
 	// request callback

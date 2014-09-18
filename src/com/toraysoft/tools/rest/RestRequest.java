@@ -11,6 +11,7 @@ import org.json.JSONObject;
 
 import android.content.Context;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
@@ -201,9 +202,6 @@ public class RestRequest {
 					}
 					return;
 				}
-				if (l != null) {
-					l.onFail();
-				}
 			}
 
 			@Override
@@ -215,6 +213,7 @@ public class RestRequest {
 					} else {
 						errmsg = error.getMessage();
 					}
+					Log.d("RESTRequest", errmsg + "");
 					l.onError(errmsg);
 					if (mRestClient.getCacheUtil() != null) {
 						String cache = mRestClient.getCacheUtil()
