@@ -10,6 +10,7 @@ import android.content.Context;
 
 import com.toraysoft.tools.rest.RestCallback.OnHostErrorCallback;
 import com.toraysoft.tools.rest.RestCallback.OnRestCallback;
+import com.toraysoft.tools.rest.RestParameter.HEADER_TYPE;
 import com.toraysoft.tools.rest.RestParameter.REQUEST_METHOD;
 import com.toraysoft.tools.rest.cache.CacheUtil;
 import com.toraysoft.tools.rest.image.ImageUtil;
@@ -65,6 +66,11 @@ public class RestClient {
 		if (mRestHeader != null)
 			mRestHeader.setRestHeaderParams(rand, token, username);
 	}
+	
+	public void setRestRequestHeaderType (HEADER_TYPE type) {
+		if(mRestRequest!=null)
+			mRestRequest.setHeaderType(type);
+	}
 
 	public Context getContext() {
 		return mContext;
@@ -81,7 +87,7 @@ public class RestClient {
 	public RestHeader getRestHeader() {
 		return mRestHeader;
 	}
-
+	
 	public String getRestClientHost() {
 		return host;
 	}

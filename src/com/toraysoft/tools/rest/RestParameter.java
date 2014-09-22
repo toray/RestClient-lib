@@ -7,6 +7,10 @@ import java.util.List;
 import org.apache.http.NameValuePair;
 
 public class RestParameter {
+	
+	public enum HEADER_TYPE {
+		NORMAL_API, APNS_PUSH,
+	}
 
 	// kind of request method
 	public interface REQUEST_METHOD {

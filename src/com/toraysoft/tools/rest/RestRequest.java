@@ -25,10 +25,11 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.toraysoft.tools.rest.RestCallback.OnRestCallback;
 import com.toraysoft.tools.rest.RestCallback.RequestListener;
+import com.toraysoft.tools.rest.RestParameter.HEADER_TYPE;
 
 public class RestRequest {
 
-	private static int DEFAULT_TIMEOUT = 30000;// request timeout 30 seconds
+	private static int DEFAULT_TIMEOUT = 15000;// request timeout 30 seconds
 	private static String PRE_CACHE = "api.page=1";
 
 	private RequestQueue mQueue;
@@ -36,6 +37,8 @@ public class RestRequest {
 	private Context mContext;
 
 	private RestClient mRestClient;
+
+	private HEADER_TYPE header_type;
 
 	public RestRequest(Context context, RestClient client) {
 		mContext = context;
@@ -148,10 +151,21 @@ public class RestRequest {
 						.setBodyContentType("application/json; charset=UTF-8");
 			}
 		}
-		if (headers != null) {
-			doRequest(stringRequest, headers);
+		if (header_type == HEADER_TYPE.APNS_PUSH) {
+			List<BasicNameValuePair> headerList = mRestClient.getRestHeader()
+					.getPushHeader();
+			Map<String, String> pushheaders = new HashMap<String, String>();
+			for (NameValuePair nameValuePair : headerList) {
+				pushheaders.put(nameValuePair.getName(),
+						nameValuePair.getValue());
+			}
+			doRequest(stringRequest, pushheaders);
 		} else {
-			doRequest(stringRequest);
+			if (headers != null) {
+				doRequest(stringRequest, headers);
+			} else {
+				doRequest(stringRequest);
+			}
 		}
 	}
 
@@ -225,5 +239,9 @@ public class RestRequest {
 				}
 			}
 		});
+	}
+
+	public void setHeaderType(HEADER_TYPE type) {
+		this.header_type = type;
 	}
 }
