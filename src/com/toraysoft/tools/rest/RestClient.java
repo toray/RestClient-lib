@@ -22,7 +22,7 @@ public class RestClient {
 	private RestHeader mRestHeader;
 	private ImageUtil mImageUtil;
 	private RestRequest mRestRequest;
-	private String host;
+	private String host;// api host
 	private OnHostErrorCallback mOnHostErrorCallback = null;
 
 	private RestClient() {
