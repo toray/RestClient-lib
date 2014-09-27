@@ -27,6 +27,7 @@ public class RestHeader {
 	// 推送配置
 	private String apnsKey;
 	private String apnsSecret;
+	private String apiVersion = "1.0";
 
 	public RestHeader() {
 
@@ -50,11 +51,16 @@ public class RestHeader {
 		this.token = token;
 		this.username = username;
 	}
-
+	
 	// header schema
 	public void setRestHeaderSchema(String schema, String clientVersion) {
 		this.schema = schema;
 		this.clientVersion = clientVersion;
+	}
+	
+	// api version
+	public void setRestHeaderApiVersion(String apiVersion) {
+		this.apiVersion = apiVersion;
 	}
 
 	// api basic header
@@ -62,7 +68,6 @@ public class RestHeader {
 		NumberFormat nf = NumberFormat.getInstance();
 		nf.setGroupingUsed(false);
 		String time = nf.format(System.currentTimeMillis() / 1000.0);
-		String apiVersion = "1.0";
 
 		List<BasicNameValuePair> headers = new ArrayList<BasicNameValuePair>();
 		headers.add(new BasicNameValuePair("X-" + schema + "-API-KEY", key));

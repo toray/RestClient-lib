@@ -41,7 +41,7 @@ public class RestClient {
 	public void setRestHost(String host) {
 		this.host = host;
 	}
-
+	
 	public void initCacheDir(File cacheDir) {
 		if (mCacheUtil != null)
 			mCacheUtil.initCacheDir(cacheDir);
@@ -71,6 +71,11 @@ public class RestClient {
 		if(mRestRequest!=null)
 			mRestRequest.setHeaderType(type);
 	}
+	
+	public void setRestApiVersion(String apiVersion) {
+		if(mRestHeader!=null)
+			mRestHeader.setRestHeaderApiVersion(apiVersion);
+	}
 
 	public Context getContext() {
 		return mContext;
@@ -91,7 +96,7 @@ public class RestClient {
 	public String getRestClientHost() {
 		return host;
 	}
-
+	
 	public OnHostErrorCallback getHostErrorListener() {
 		return mOnHostErrorCallback;
 	}
