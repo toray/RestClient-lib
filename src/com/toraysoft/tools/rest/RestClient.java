@@ -1,168 +1,194 @@
 package com.toraysoft.tools.rest;
 
-import java.io.File;
-import java.util.Map;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import android.content.Context;
+import android.os.Environment;
+import android.util.Log;
 
+import com.android.volley.NoConnectionError;
+import com.android.volley.Request.Method;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.Volley;
 import com.toraysoft.tools.rest.RestCallback.OnHostErrorCallback;
-import com.toraysoft.tools.rest.RestCallback.OnRestCallback;
-import com.toraysoft.tools.rest.RestParameter.HEADER_TYPE;
-import com.toraysoft.tools.rest.RestParameter.REQUEST_METHOD;
-import com.toraysoft.tools.rest.cache.CacheUtil;
-import com.toraysoft.tools.rest.image.ImageUtil;
+import com.toraysoft.tools.rest.RestCallback.OnResponseCallback;
+import com.toraysoft.tools.rest.RestCallback.RequestListener;
+import com.toraysoft.utils.cache.CacheUtil;
 
 public class RestClient {
 
+	private static String PRE_CACHE = "api.page=1";
+
 	private Context mContext;
-	private CacheUtil mCacheUtil;
-	private RestHeader mRestHeader;
-	private ImageUtil mImageUtil;
-	private RestRequest mRestRequest;
 	private String host;// api host
 	private OnHostErrorCallback mOnHostErrorCallback = null;
+	private CacheUtil cacheUtil;
+	private RequestQueue mQueue;
+	private RestHeader defaultHeader;
 
+	@SuppressWarnings("unused")
 	private RestClient() {
-
 	}
 
 	public RestClient(Context ctx, OnHostErrorCallback l) {
 		mContext = ctx;
-		mRestHeader = new RestHeader();
-		mRestRequest = new RestRequest(ctx, this);
-		mCacheUtil = new CacheUtil();
-		mImageUtil = new ImageUtil(this);
 		this.mOnHostErrorCallback = l;
+		if (Environment.getExternalStorageState() == Environment.MEDIA_MOUNTED) {
+			cacheUtil = new CacheUtil(ctx.getExternalCacheDir());
+		} else {
+			cacheUtil = new CacheUtil(ctx.getCacheDir());
+		}
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private <T> void send(final RestRequest req, final RequestListener<T> l) {
+
+		String requestBody = "";
+		if (req.getMethod() == Method.POST && req.getParams() != null) {
+			requestBody = req.getParams().toJSONObject().toString();
+		}
+
+		RestRequest.ExJSONRequest jsonRequest = new RestRequest.ExJSONRequest(
+				req.getMethod(), req.getFullUrl(), requestBody,
+				new Response.Listener<T>() {
+
+					@Override
+					public void onResponse(T response) {
+						if (l != null) {
+							l.onResponse(response);
+						}
+					}
+				}, new Response.ErrorListener() {
+
+					@Override
+					public void onErrorResponse(VolleyError error) {
+						if (error instanceof NoConnectionError) {
+							if (getHostErrorListener() != null) {
+								getHostErrorListener()
+										.onChangHost(req.getUrl());
+							}
+						}
+						if (l != null) {
+							l.onErrorResponse(error);
+						}
+					}
+
+				});
+		if (req.getParams() != null) {
+			jsonRequest.setParams(req.getParams().toMap());
+		}
+		if (req.getHeaders() != null) {
+			jsonRequest.setHeaders(req.getHeaders().toMap());
+		}
+		getQueue().add(jsonRequest);
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T> void send(final RestRequest req, final OnResponseCallback<T> l) {
+
+		req.setHost(getRestClientHost());
+		String url = req.getFullUrl();
+
+		boolean isFirstPage = url.contains(PRE_CACHE);
+		final String cacheKey = url.hashCode() + "";
+		if (isFirstPage) {
+			if (getCacheUtil() != null) {
+				Object cache = getCacheUtil().getJSONCache(cacheKey);
+				if (cache != null) {
+					l.onCache((T) cache);
+				}
+			}
+		}
+		send(req, new RequestListener<T>() {
+
+			@Override
+			public void onResponse(T response) {
+				if (response != null) {
+					if (l != null) {
+						l.onSuccess(response);
+						if (getCacheUtil() != null) {
+							getCacheUtil().putJSONCache(cacheKey, response);
+						}
+					}
+					return;
+				}
+			}
+
+			@Override
+			public void onErrorResponse(VolleyError error) {
+				if (l != null) {
+					String errmsg = "";
+					if (error.networkResponse != null) {
+						errmsg = new String(error.networkResponse.data);
+					} else {
+						errmsg = error.getMessage();
+					}
+					Log.d("RESTRequest", errmsg + "");
+					l.onError(errmsg);
+					if (getCacheUtil() != null) {
+						Object cache = getCacheUtil().getJSONCache(cacheKey);
+						if (cache != null) {
+							l.onCache((T) cache);
+						}
+					}
+				}
+			}
+		});
+	}
+
+	public <T> void doGet(String url, RestParameter params,
+			final OnResponseCallback<T> l) {
+		RestRequest req = new RestRequest(mContext, Method.GET, url);
+		if (params != null)
+			req.setParams(params);
+		if (defaultHeader != null)
+			req.setHeaders(defaultHeader);
+		send(req, l);
+	}
+
+	public <T> void doPost(String url, RestParameter params,
+			final OnResponseCallback<T> l) {
+		RestRequest req = new RestRequest(mContext, Method.POST, url);
+		if (params != null)
+			req.setParams(params);
+		if (defaultHeader != null)
+			req.setHeaders(defaultHeader);
+		send(req, l);
 	}
 
 	public void setRestHost(String host) {
 		this.host = host;
-	}
-	
-	public void initCacheDir(File cacheDir) {
-		if (mCacheUtil != null)
-			mCacheUtil.initCacheDir(cacheDir);
-	}
-
-	public void setRestHeaderKeys(String key, String secret) {
-		if (mRestHeader != null)
-			mRestHeader.setRestHeaderKeys(key, secret);
-	}
-
-	public void setRestHeaderPushKeys(String apnsKey, String apnsSecret) {
-		if (mRestHeader != null)
-			mRestHeader.setRestHeaderPushKeys(apnsKey, apnsSecret);
-	}
-
-	public void setRestHeaderSchema(String schema, String clientVersion) {
-		if (mRestHeader != null)
-			mRestHeader.setRestHeaderSchema(schema, clientVersion);
-	}
-
-	public void setRestHeaderSign(String rand, String token, String username) {
-		if (mRestHeader != null)
-			mRestHeader.setRestHeaderParams(rand, token, username);
-	}
-	
-	public void setRestRequestHeaderType (HEADER_TYPE type) {
-		if(mRestRequest!=null)
-			mRestRequest.setHeaderType(type);
-	}
-	
-	public void setRestApiVersion(String apiVersion) {
-		if(mRestHeader!=null)
-			mRestHeader.setRestHeaderApiVersion(apiVersion);
 	}
 
 	public Context getContext() {
 		return mContext;
 	}
 
-	public CacheUtil getCacheUtil() {
-		return mCacheUtil;
-	}
-
-	public ImageUtil getImageUtil() {
-		return mImageUtil;
-	}
-
-	public RestHeader getRestHeader() {
-		return mRestHeader;
-	}
-	
 	public String getRestClientHost() {
 		return host;
 	}
-	
+
 	public OnHostErrorCallback getHostErrorListener() {
 		return mOnHostErrorCallback;
 	}
 
-	// doGet with normal header, none param
-	public void doGet(String url, OnRestCallback l) {
-		doGet(null, null, url, l);
+	private RequestQueue getQueue() {
+		if (mQueue == null) {
+			mQueue = Volley.newRequestQueue(mContext);
+		}
+		return mQueue;
 	}
 
-	// doGet with other header, none param
-	public void doGet(Map<String, String> headers, String url, OnRestCallback l) {
-		doGet(headers, null, url, l);
+	public CacheUtil getCacheUtil() {
+		return cacheUtil;
 	}
 
-	// doPost with normal header,none param
-	public void doPost(String url, OnRestCallback l) {
-		doPost(null, null, url, l);
+	public RestHeader getDefaultHeader() {
+		return defaultHeader;
 	}
 
-	// doPost with other header,none param
-	public void doPost(Map<String, String> headers, String url, OnRestCallback l) {
-		doPost(headers, null, url, l);
-	}
-
-	// doPost with normal header,param
-	public void doPost(String url, Map<String, String> params, OnRestCallback l) {
-		doPost(null, params, url, l);
-	}
-
-	// doPost with other header,param
-	public void doPost(Map<String, String> headers, String url,
-			Map<String, String> params, OnRestCallback l) {
-		doPost(headers, params, url, l);
-	}
-
-	// doPost with normal header,JSONObject param
-	public void doPost(String url, JSONObject param, OnRestCallback l) {
-		doPost(null, param, url, l);
-	}
-
-	// doPost with other header,JSONObject param
-	public void doPost(Map<String, String> headers, String url,
-			JSONObject param, OnRestCallback l) {
-		doPost(headers, param, url, l);
-	}
-
-	// doPost with normal header, JSONArray param
-	public void doPost(String url, JSONArray param, OnRestCallback l) {
-		doPost(null, param, url, l);
-	}
-
-	// doPost with other header, JSONArray param
-	public void doPost(Map<String, String> headers, String url,
-			JSONArray param, OnRestCallback l) {
-		doPost(headers, param, url, l);
-	}
-
-	private void doGet(Map<String, String> headers, Object param, String url,
-			OnRestCallback l) {
-		mRestRequest.doMethodHelper(REQUEST_METHOD.GET, headers, param, url, l);
-	}
-
-	private void doPost(Map<String, String> headers, Object param, String url,
-			OnRestCallback l) {
-		mRestRequest
-				.doMethodHelper(REQUEST_METHOD.POST, headers, param, url, l);
+	public void setDefaultHeader(RestHeader defaultHeader) {
+		this.defaultHeader = defaultHeader;
 	}
 
 }

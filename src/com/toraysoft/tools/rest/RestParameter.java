@@ -1,53 +1,53 @@
 package com.toraysoft.tools.rest;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
-import org.apache.http.NameValuePair;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class RestParameter {
-	
-	public enum HEADER_TYPE {
-		NORMAL_API, APNS_PUSH,
+
+	Map<String, String> params;
+
+	public RestParameter() {
+		params = new HashMap<String, String>();
 	}
 
-	// kind of request method
-	public interface REQUEST_METHOD {
-		int GET = 0;
-		int POST = 1;
+	public void add(String key, String value) {
+		params.put(key, value);
 	}
 
-	// build url with list params
-	public static String getUrlWithParams(String url, List<NameValuePair> params) {
-		StringBuilder sb = new StringBuilder(url);
-		for (NameValuePair param : params) {
-			String name = param.getName();
-			try {
-				String value = URLEncoder.encode(param.getValue(), "UTF-8");
-				url = sb.toString();
-				if (url.indexOf("?") == -1) {
-					sb.append("?");
-				} else {
-					sb.append("&");
+	public void remove(String key) {
+		params.remove(key);
+	}
+
+	public void pullMap(Map<String, String> headers) {
+		this.params.putAll(headers);
+	}
+
+	public Map<String, String> toMap() {
+		return params;
+	}
+
+	public JSONObject toJSONObject() {
+		JSONObject ret = new JSONObject();
+		if (params != null) {
+			for (String key : params.keySet()) {
+				try {
+					ret.put(key, get(key));
+				} catch (JSONException e) {
 				}
-				sb.append(name).append("=").append(value);
-			} catch (UnsupportedEncodingException e) {
-				e.printStackTrace();
 			}
 		}
-		return sb.toString();
+		return ret;
 	}
 
-	// build url with stirng key
-	public static String getUrlWithParams(String url, String key) {
-		StringBuilder sb = new StringBuilder(url);
-		try {
-			key = URLEncoder.encode(key, "UTF-8");
-			sb.append(key).append("/");
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-		}
-		return sb.toString();
+	public String get(String key) {
+		return params.get(key);
+	}
+
+	public int size(){
+		return params.size();
 	}
 }

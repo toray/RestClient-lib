@@ -5,13 +5,12 @@ import com.android.volley.VolleyError;
 public class RestCallback {
 
 	// restclient callback
-	public interface OnRestCallback {
-		public void onSuccess(String response);
+	public interface OnResponseCallback<T> {
+		public void onSuccess(T response);
 
-		public void onCache(String cache);
+		public void onCache(T cache);
 
 		public void onError(String errmsg);
-
 	}
 
 	// request callback
