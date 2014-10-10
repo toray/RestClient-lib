@@ -197,8 +197,6 @@ public class RestRequest {
 				StringBuilder sb = new StringBuilder(fullUrl);
 
 				for (String key : this.params.toMap().keySet()) {
-					System.out.println("=====PPP=======" + key + "==="
-							+ this.params.get(key));
 					try {
 						String value = URLEncoder.encode(this.params.get(key),
 								"UTF-8");
@@ -212,7 +210,6 @@ public class RestRequest {
 						e.printStackTrace();
 					}
 				}
-				System.out.println("=====UUU==========" + sb.toString());
 				return sb.toString();
 			}
 			return fullUrl;
