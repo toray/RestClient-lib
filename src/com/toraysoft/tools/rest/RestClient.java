@@ -84,18 +84,21 @@ public class RestClient {
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T> void send(final RestRequest req, final OnResponseCallback<T> l) {
+	public <T> void send(final RestRequest req, final OnResponseCallback<T> l,
+			final boolean isCache) {
 
 		req.setHost(getRestClientHost());
 		String url = req.getFullUrl();
 
-		boolean isFirstPage = url.contains(PRE_CACHE);
 		final String cacheKey = url.hashCode() + "";
-		if (isFirstPage) {
-			if (getCacheUtil() != null) {
-				Object cache = getCacheUtil().getJSONCache(cacheKey);
-				if (cache != null) {
-					l.onCache((T) cache);
+		if (isCache) {
+			boolean isFirstPage = url.contains(PRE_CACHE);
+			if (isFirstPage) {
+				if (getCacheUtil() != null) {
+					Object cache = getCacheUtil().getJSONCache(cacheKey);
+					if (cache != null) {
+						l.onCache((T) cache);
+					}
 				}
 			}
 		}
@@ -106,7 +109,7 @@ public class RestClient {
 				if (response != null) {
 					if (l != null) {
 						l.onSuccess(response);
-						if (getCacheUtil() != null) {
+						if (isCache && getCacheUtil() != null) {
 							getCacheUtil().putJSONCache(cacheKey, response);
 						}
 					}
@@ -125,7 +128,7 @@ public class RestClient {
 					}
 					Log.d("RESTRequest", errmsg + "");
 					l.onError(errmsg);
-					if (getCacheUtil() != null) {
+					if (isCache && getCacheUtil() != null) {
 						Object cache = getCacheUtil().getJSONCache(cacheKey);
 						if (cache != null) {
 							l.onCache((T) cache);
@@ -138,12 +141,17 @@ public class RestClient {
 
 	public <T> void doGet(String url, RestParameter params,
 			final OnResponseCallback<T> l) {
+		doGet(url, params, l, true);
+	}
+
+	public <T> void doGet(String url, RestParameter params,
+			final OnResponseCallback<T> l, boolean isCache) {
 		RestRequest req = new RestRequest(mContext, Method.GET, url);
 		if (params != null)
 			req.setParams(params);
 		if (defaultHeader != null)
 			req.setHeaders(defaultHeader);
-		send(req, l);
+		send(req, l, isCache);
 	}
 
 	public <T> void doPost(String url, RestParameter params,
@@ -153,7 +161,7 @@ public class RestClient {
 			req.setParams(params);
 		if (defaultHeader != null)
 			req.setHeaders(defaultHeader);
-		send(req, l);
+		send(req, l, false);
 	}
 
 	public void setRestHost(String host) {
