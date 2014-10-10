@@ -27,7 +27,7 @@ public class CommonHeader extends RestHeader {
 	private String schema = "";
 	private String clientVersion = "";
 
-	private String apiVersion = "1.0";
+	private String apiVersion = "1";
 
 	public CommonHeader(String key, String secret) {
 		super();
