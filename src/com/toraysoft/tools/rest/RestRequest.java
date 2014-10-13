@@ -34,6 +34,7 @@ public class RestRequest {
 	RestHeader headers;
 	RestParameter params;
 	String host;
+	boolean isCache = false;
 
 	public RestRequest(Context context, int method, String url) {
 		this.mContext = context;
@@ -215,5 +216,13 @@ public class RestRequest {
 			return fullUrl;
 		}
 		return url;
+	}
+
+	public boolean isCache() {
+		return isCache;
+	}
+
+	public void setCache(boolean isCache) {
+		this.isCache = isCache;
 	}
 }

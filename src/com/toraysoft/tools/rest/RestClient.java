@@ -80,18 +80,18 @@ public class RestClient {
 		if (req.getHeaders() != null) {
 			jsonRequest.setHeaders(req.getHeaders().toMap());
 		}
+		jsonRequest.setShouldCache(req.isCache());
 		getQueue().add(jsonRequest);
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T> void send(final RestRequest req, final OnResponseCallback<T> l,
-			final boolean isCache) {
+	public <T> void send(final RestRequest req, final OnResponseCallback<T> l) {
 
 		req.setHost(getRestClientHost());
 		String url = req.getFullUrl();
 
 		final String cacheKey = url.hashCode() + "";
-		if (isCache) {
+		if (req.isCache()) {
 			boolean isFirstPage = url.contains(PRE_CACHE);
 			if (isFirstPage) {
 				if (getCacheUtil() != null) {
@@ -109,7 +109,7 @@ public class RestClient {
 				if (response != null) {
 					if (l != null) {
 						l.onSuccess(response);
-						if (isCache && getCacheUtil() != null) {
+						if (req.isCache() && getCacheUtil() != null) {
 							getCacheUtil().putJSONCache(cacheKey, response);
 						}
 					}
@@ -128,7 +128,7 @@ public class RestClient {
 					}
 					Log.d("RESTRequest", errmsg + "");
 					l.onError(errmsg);
-					if (isCache && getCacheUtil() != null) {
+					if (req.isCache() && getCacheUtil() != null) {
 						Object cache = getCacheUtil().getJSONCache(cacheKey);
 						if (cache != null) {
 							l.onCache((T) cache);
@@ -151,7 +151,8 @@ public class RestClient {
 			req.setParams(params);
 		if (defaultHeader != null)
 			req.setHeaders(defaultHeader);
-		send(req, l, isCache);
+		req.setCache(isCache);
+		send(req, l);
 	}
 
 	public <T> void doPost(String url, RestParameter params,
@@ -161,7 +162,8 @@ public class RestClient {
 			req.setParams(params);
 		if (defaultHeader != null)
 			req.setHeaders(defaultHeader);
-		send(req, l, false);
+		req.setCache(false);
+		send(req, l);
 	}
 
 	public void setRestHost(String host) {
