@@ -47,7 +47,6 @@ public class RestClient {
 		if (req.getMethod() == Method.POST && req.getParams() != null) {
 			requestBody = req.getParams().toJSONObject().toString();
 		}
-		Log.e("test", "===RestRequest==="+req.getFullUrl());
 		RestRequest.ExJSONRequest jsonRequest = new RestRequest.ExJSONRequest(
 				req.getMethod(), req.getFullUrl(), requestBody,
 				new Response.Listener<T>() {
