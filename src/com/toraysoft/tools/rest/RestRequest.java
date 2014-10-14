@@ -63,7 +63,7 @@ public class RestRequest {
 			this.headers.pullMap(headers);
 		}
 
-		public void setParams(Map<String, String> params) {
+		public void setParams(Map<String, Object> params) {
 			this.params.pullMap(params);
 		}
 
@@ -199,7 +199,7 @@ public class RestRequest {
 
 				for (String key : this.params.toMap().keySet()) {
 					try {
-						String value = URLEncoder.encode(this.params.get(key),
+						String value = URLEncoder.encode(this.params.get(key).toString(),
 								"UTF-8");
 						if (sb.toString().indexOf("?") == -1) {
 							sb.append("?");
