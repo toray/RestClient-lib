@@ -1,11 +1,7 @@
 package com.toraysoft.tools.rest.header;
 
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
-
-import org.apache.http.message.BasicNameValuePair;
 
 import android.text.TextUtils;
 
@@ -27,7 +23,7 @@ public class CommonHeader extends RestHeader {
 	private String schema = "";
 	private String clientVersion = "";
 
-	private String apiVersion = "2";
+	private String apiVersion = "1";
 
 	public CommonHeader(String key, String secret) {
 		super();

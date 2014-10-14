@@ -8,13 +8,13 @@ import org.json.JSONObject;
 
 public class RestParameter {
 
-	Map<String, String> params;
+	Map<String, Object> params;
 
 	public RestParameter() {
-		params = new HashMap<String, String>();
+		params = new HashMap<String, Object>();
 	}
 
-	public void add(String key, String value) {
+	public void add(String key, Object value) {
 		params.put(key, value);
 	}
 
@@ -22,12 +22,16 @@ public class RestParameter {
 		params.remove(key);
 	}
 
-	public void pullMap(Map<String, String> headers) {
+	public void pullMap(Map<String, Object> headers) {
 		this.params.putAll(headers);
 	}
 
 	public Map<String, String> toMap() {
-		return params;
+		Map<String, String> map = new HashMap<String, String>();
+		for (String key : params.keySet()) {
+			map.put(key, params.get(key).toString());
+		}
+		return map;
 	}
 
 	public JSONObject toJSONObject() {
@@ -43,11 +47,11 @@ public class RestParameter {
 		return ret;
 	}
 
-	public String get(String key) {
+	public Object get(String key) {
 		return params.get(key);
 	}
 
-	public int size(){
+	public int size() {
 		return params.size();
 	}
 }
