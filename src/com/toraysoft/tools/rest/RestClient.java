@@ -25,6 +25,7 @@ public class RestClient {
 	private CacheUtil cacheUtil;
 	private RequestQueue mQueue;
 	private RestHeader defaultHeader;
+	private boolean isDebug = false;
 
 	@SuppressWarnings("unused")
 	private RestClient() {
@@ -40,6 +41,11 @@ public class RestClient {
 		}
 	}
 
+	private void d(String msg) {
+		if (isDebug)
+			Log.d("RestClient", msg);
+	}
+
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private <T> void send(final RestRequest req, final RequestListener<T> l) {
 
@@ -47,6 +53,7 @@ public class RestClient {
 		if (req.getMethod() == Method.POST && req.getParams() != null) {
 			requestBody = req.getParams().toJSONObject().toString();
 		}
+		d("Request url: " + req.getFullUrl());
 		RestRequest.ExJSONRequest jsonRequest = new RestRequest.ExJSONRequest(
 				req.getMethod(), req.getFullUrl(), requestBody,
 				new Response.Listener<T>() {
@@ -198,6 +205,14 @@ public class RestClient {
 
 	public void setDefaultHeader(RestHeader defaultHeader) {
 		this.defaultHeader = defaultHeader;
+	}
+
+	public boolean isDebug() {
+		return isDebug;
+	}
+
+	public void setDebug(boolean isDebug) {
+		this.isDebug = isDebug;
 	}
 
 }
