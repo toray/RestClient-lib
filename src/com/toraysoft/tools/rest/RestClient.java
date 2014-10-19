@@ -17,7 +17,8 @@ import com.toraysoft.utils.cache.CacheUtil;
 
 public class RestClient {
 
-	private static String PRE_CACHE = "api.page=1";
+	private static String PAGE_CACHE = "api.page";
+	private static String PRE_CACHE = PAGE_CACHE+"=1";
 
 	private Context mContext;
 	private String host;// api host
@@ -98,8 +99,9 @@ public class RestClient {
 
 		final String cacheKey = url.hashCode() + "";
 		if (req.isCache()) {
+			boolean isHasPage = url.contains(PAGE_CACHE);
 			boolean isFirstPage = url.contains(PRE_CACHE);
-			if (isFirstPage) {
+			if (!isHasPage || isFirstPage) {
 				if (getCacheUtil() != null) {
 					Object cache = getCacheUtil().getJSONCache(cacheKey);
 					if (cache != null) {
