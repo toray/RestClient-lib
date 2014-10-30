@@ -18,7 +18,7 @@ import com.toraysoft.utils.cache.CacheUtil;
 public class RestClient {
 
 	private static String PAGE_CACHE = "api.page";
-	private static String PRE_CACHE = PAGE_CACHE+"=1";
+	private static String PRE_CACHE = PAGE_CACHE + "=1";
 
 	private Context mContext;
 	private String host;// api host
@@ -27,6 +27,7 @@ public class RestClient {
 	private RequestQueue mQueue;
 	private RestHeader defaultHeader;
 	private boolean isDebug = false;
+	private boolean isRandom = false;
 
 	@SuppressWarnings("unused")
 	private RestClient() {
@@ -54,13 +55,22 @@ public class RestClient {
 		if (req.getMethod() == Method.POST && req.getParams() != null) {
 			requestBody = req.getParams().toJSONObject().toString();
 		}
-		d("Request url: " + req.getFullUrl());
+		String fullUrl = req.getFullUrl();
+		if (isRandom()) {
+			long r = Math.round(Math.random() * 99999999);
+			fullUrl = fullUrl + (fullUrl.contains("?") ? "&" : "?") + "random="
+					+ r;
+		}
+		d("Request url: " + fullUrl);
+		final String furl = fullUrl;
 		RestRequest.ExJSONRequest jsonRequest = new RestRequest.ExJSONRequest(
-				req.getMethod(), req.getFullUrl(), requestBody,
+				req.getMethod(), fullUrl, requestBody,
 				new Response.Listener<T>() {
 
 					@Override
 					public void onResponse(T response) {
+						d("Response from URL [" + furl + "] : \n"
+								+ response.toString());
 						if (l != null) {
 							l.onResponse(response);
 						}
@@ -215,6 +225,14 @@ public class RestClient {
 
 	public void setDebug(boolean isDebug) {
 		this.isDebug = isDebug;
+	}
+
+	public boolean isRandom() {
+		return isRandom;
+	}
+
+	public void setRandom(boolean isRandom) {
+		this.isRandom = isRandom;
 	}
 
 }

@@ -80,4 +80,16 @@ public class CommonHeader extends RestHeader {
 		return super.toMap();
 	}
 
+	public String getRand() {
+		return rand;
+	}
+
+	public String getToken() {
+		return token;
+	}
+
+	public String getUsername() {
+		return username;
+	}
+
 }
