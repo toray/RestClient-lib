@@ -187,11 +187,6 @@ public class RestRequest {
 	public String getFullUrl() {
 		if (host != null && !url.startsWith("http")) {
 			String fullUrl = host + url;
-			if (fullUrl.indexOf("?") == -1) {
-				if (!fullUrl.endsWith("/")) {
-					fullUrl = fullUrl + "/";
-				}
-			}
 
 			if (this.method == Method.GET && this.params != null
 					&& this.params.size() > 0) {
