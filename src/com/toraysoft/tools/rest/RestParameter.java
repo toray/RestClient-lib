@@ -28,11 +28,13 @@ public class RestParameter {
 
 	public Map<String, String> toMap() {
 		Map<String, String> map = new HashMap<String, String>();
-		for (String key : params.keySet()) {
-			if(params.get(key)!=null){
-				map.put(key, params.get(key).toString());
-			}else{
-				throw new NullPointerException("RestClient parameter can not be NULL !!!");
+		if(params!=null){
+			for (String key : params.keySet()) {
+				if(params.get(key)!=null){
+					map.put(key, params.get(key).toString());
+				}else{
+//					throw new NullPointerException("RestClient parameter can not be NULL !!!");
+				}
 			}
 		}
 		return map;
