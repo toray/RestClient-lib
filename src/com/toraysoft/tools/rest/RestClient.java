@@ -28,6 +28,7 @@ public class RestClient {
 	private RestHeader defaultHeader;
 	private boolean isDebug = false;
 	private boolean isRandom = false;
+	private String user = "";
 
 	@SuppressWarnings("unused")
 	private RestClient() {
@@ -107,7 +108,7 @@ public class RestClient {
 		req.setHost(getRestClientHost());
 		String url = req.getFullUrl();
 
-		final String cacheKey = url.hashCode() + "";
+		final String cacheKey = user + url.hashCode();
 		if (req.isCache()) {
 			boolean isHasPage = url.contains(PAGE_CACHE);
 			boolean isFirstPage = url.contains(PRE_CACHE);
@@ -235,4 +236,12 @@ public class RestClient {
 		this.isRandom = isRandom;
 	}
 
+	public String getUser() {
+		return user;
+	}
+
+	public void setUser(String user) {
+		this.user = user;
+	}
+	
 }
