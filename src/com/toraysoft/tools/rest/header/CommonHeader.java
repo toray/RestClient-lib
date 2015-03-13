@@ -26,10 +26,14 @@ public class CommonHeader extends RestHeader {
 	private String apiVersion = "1";
 
 	public CommonHeader(String key, String secret) {
+		this(key, secret, "MUSIC");
+	}
+	
+	public CommonHeader(String key, String secret, String schema) {
 		super();
 		this.key = key;
 		this.secret = secret;
-		this.schema = "MUSIC";
+		this.schema = schema;
 	}
 
 	// user's rand,token,username
