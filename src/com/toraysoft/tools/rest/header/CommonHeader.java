@@ -60,6 +60,7 @@ public class CommonHeader extends RestHeader {
 			sb.append("schema");
 			sb.append("-");
 		}
+		sb.append(name);
 		return sb.toString();
 	}
 
