@@ -26,7 +26,7 @@ public class CommonHeader extends RestHeader {
 	private String apiVersion = "1";
 
 	public CommonHeader(String key, String secret) {
-		this(key, secret, "MUSIC");
+		this(key, secret, "");
 	}
 	
 	public CommonHeader(String key, String secret, String schema) {
@@ -52,22 +52,31 @@ public class CommonHeader extends RestHeader {
 	public void setRestHeaderApiVersion(String apiVersion) {
 		this.apiVersion = apiVersion;
 	}
+	
+	String getHeaderKey(String name){
+		StringBuffer sb = new StringBuffer();
+		sb.append("X-");
+		if(!TextUtils.isEmpty(schema)){
+			sb.append("schema");
+			sb.append("-");
+		}
+		return sb.toString();
+	}
 
 	@Override
 	public Map<String, String> toMap() {
 		NumberFormat nf = NumberFormat.getInstance();
 		nf.setGroupingUsed(false);
 		String time = nf.format(System.currentTimeMillis() / 1000.0);
-
-		headers.put("X-" + schema + "-API-KEY", key);
-		headers.put("X-" + schema + "-API-TIMESTAMP", time);
-		headers.put("X-" + schema + "-API-VERSION", apiVersion);
-		headers.put("X-" + schema + "-CLIENT-OS", "android");
-		headers.put("X-" + schema + "-CLIENT-VERSION", clientVersion);
+		headers.put(getHeaderKey("API-KEY"), key);
+		headers.put(getHeaderKey("API-TIMESTAMP"), time);
+		headers.put(getHeaderKey("API-VERSION"), apiVersion);
+		headers.put(getHeaderKey("CLIENT-OS"), "android");
+		headers.put(getHeaderKey("CLIENT-VERSION"), clientVersion);
 
 		String sign = key + "&" + secret + "&" + apiVersion + "&" + time;
 
-		headers.put("X-" + schema + "-API-SIGNATURE",
+		headers.put(getHeaderKey("API-SIGNATURE"),
 				new SHA1().getDigestOfString(sign.getBytes()));
 		if (!TextUtils.isEmpty(rand) && !TextUtils.isEmpty(token)
 				&& !TextUtils.isEmpty(username)) {
