@@ -57,9 +57,10 @@ public class CommonHeader extends RestHeader {
 		StringBuffer sb = new StringBuffer();
 		sb.append("X-");
 		if(!TextUtils.isEmpty(schema)){
-			sb.append("schema");
+			sb.append(schema);
 			sb.append("-");
 		}
+		sb.append(name);
 		return sb.toString();
 	}
 
