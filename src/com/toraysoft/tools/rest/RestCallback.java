@@ -21,7 +21,7 @@ public class RestCallback {
 	}
 
 	public interface OnHostErrorCallback {
-		public void onChangHost(String url);
+		public void onChangHost(String host);
 	}
 
 }
