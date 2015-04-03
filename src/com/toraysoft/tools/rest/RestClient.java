@@ -2,6 +2,7 @@ package com.toraysoft.tools.rest;
 
 import android.content.Context;
 import android.os.Environment;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.android.volley.NoConnectionError;
@@ -29,6 +30,8 @@ public class RestClient {
 	private boolean isDebug = false;
 	private boolean isRandom = false;
 	private String user = "";
+	private String proxyHost;
+	private int proxyPort;
 
 	@SuppressWarnings("unused")
 	private RestClient() {
@@ -81,9 +84,11 @@ public class RestClient {
 					@Override
 					public void onErrorResponse(VolleyError error) {
 						if (error instanceof NoConnectionError) {
-							if (getHostErrorListener() != null) {
-								getHostErrorListener()
-										.onChangHost(req.getUrl());
+							if(error.getMessage() != null && error.getMessage().contains("UnknownHostException")) {
+								if (getHostErrorListener() != null) {
+									getHostErrorListener()
+											.onChangHost(host);
+								}
 							}
 						}
 						if (l != null) {
@@ -203,7 +208,20 @@ public class RestClient {
 
 	private RequestQueue getQueue() {
 		if (mQueue == null) {
-			mQueue = Volley.newRequestQueue(mContext);
+			if(!TextUtils.isEmpty(proxyHost) && proxyPort > 0) {
+				mQueue = Volley.newRequestQueue(mContext, proxyHost, proxyPort);
+				if (isDebug)
+					System.out.println("*****************************>>>create by proxy!!!!!!!");
+			} else {
+				mQueue = Volley.newRequestQueue(mContext);
+				if (isDebug)
+					System.out.println("*****************************>>>create not by proxy!!!!!!!");
+			}
+		}
+		if (isDebug) {
+			if(proxyPort > 0) {
+				System.out.println("==============>>>using proxy!!!!!!!!");
+			}	
 		}
 		return mQueue;
 	}
@@ -242,6 +260,12 @@ public class RestClient {
 
 	public void setUser(String user) {
 		this.user = user;
+	}
+	
+	public void setProxy(String proxyHost, int proxyPort) {
+		this.proxyHost = proxyHost;
+		this.proxyPort = proxyPort;
+		this.mQueue = null;
 	}
 	
 }
