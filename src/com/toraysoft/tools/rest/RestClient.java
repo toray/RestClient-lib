@@ -1,5 +1,11 @@
 package com.toraysoft.tools.rest;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
 import android.content.Context;
 import android.os.Environment;
 import android.text.TextUtils;
@@ -51,13 +57,35 @@ public class RestClient {
 		if (isDebug)
 			Log.d("RestClient", msg);
 	}
+	
+	private <T> void send(final RestRequest req, final RequestListener<T> l) {
+		this.send(req, false, l);
+	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private <T> void send(final RestRequest req, final RequestListener<T> l) {
+	private <T> void send(final RestRequest req, boolean isForm, final RequestListener<T> l) {
 
 		String requestBody = "";
 		if (req.getMethod() == Method.POST && req.getParams() != null) {
-			requestBody = req.getParams().toJSONObject().toString();
+			if(isForm){
+				StringBuffer sb = new StringBuffer();
+				Map<String, String> map = req.getParams().toMap();
+				Set<Entry<String, String>>  entrys = map.entrySet();
+				for (Entry<String, String> e : entrys) {
+					try {
+						sb.append(e.getKey());
+						sb.append("=");
+						sb.append(URLEncoder.encode(e.getValue(), "UTF-8"));
+						sb.append("&");
+					} catch (UnsupportedEncodingException e1) {
+						e1.printStackTrace();
+					}
+				}
+				sb.deleteCharAt(sb.length() - 1);
+				requestBody = sb.toString();
+			}else{
+				requestBody = req.getParams().toJSONObject().toString();
+			}
 		}
 		String fullUrl = req.getFullUrl();
 		if (isRandom()) {
@@ -97,6 +125,9 @@ public class RestClient {
 					}
 
 				});
+		if(isForm){
+			jsonRequest.setBodyContentType("application/x-www-form-urlencoded");
+		}
 		if (req.getParams() != null) {
 			jsonRequest.setParams(req.getParams().toMap());
 		}
@@ -106,9 +137,13 @@ public class RestClient {
 		jsonRequest.setShouldCache(req.isCache());
 		getQueue().add(jsonRequest);
 	}
+	
+	public <T> void send(final RestRequest req, final OnResponseCallback<T> l) {
+		this.send(req, false, l);
+	}
 
 	@SuppressWarnings("unchecked")
-	public <T> void send(final RestRequest req, final OnResponseCallback<T> l) {
+	public <T> void send(final RestRequest req, boolean isForm, final OnResponseCallback<T> l) {
 
 		req.setHost(getRestClientHost());
 		String url = req.getFullUrl();
@@ -126,7 +161,7 @@ public class RestClient {
 				}
 			}
 		}
-		send(req, new RequestListener<T>() {
+		send(req, isForm, new RequestListener<T>() {
 
 			@Override
 			public void onResponse(T response) {
@@ -181,13 +216,18 @@ public class RestClient {
 
 	public <T> void doPost(String url, RestParameter params,
 			final OnResponseCallback<T> l) {
+		this.doPost(url, params, false, l);
+	}
+	
+	public <T> void doPost(String url, RestParameter params, boolean isForm,
+			final OnResponseCallback<T> l) {
 		RestRequest req = new RestRequest(mContext, Method.POST, url);
 		if (params != null)
 			req.setParams(params);
 		if (defaultHeader != null)
 			req.setHeaders(defaultHeader);
 		req.setCache(false);
-		send(req, l);
+		send(req, isForm, l);
 	}
 
 	public void setRestHost(String host) {
@@ -266,6 +306,10 @@ public class RestClient {
 		this.proxyHost = proxyHost;
 		this.proxyPort = proxyPort;
 		this.mQueue = null;
+	}
+	
+	public void setProxy(String proxyHost) {
+		this.setProxy(proxyHost, 80);
 	}
 	
 }
