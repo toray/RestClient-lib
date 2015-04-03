@@ -99,6 +99,7 @@ public class RestRequest {
 		@SuppressWarnings("unchecked")
 		@Override
 		protected Response<T> parseNetworkResponse(NetworkResponse response) {
+			
 			String resp_data = (new String(response.data)).trim();
 			if (resp_data.startsWith("[") && resp_data.endsWith("]")) {
 				try {

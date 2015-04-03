@@ -12,6 +12,12 @@ public class RestCallback {
 
 		public void onError(String errmsg);
 	}
+	
+	public interface OnRequestListener<T> {
+		public void onResponse(T response);
+
+		public void onError(int errno,String error);
+	}
 
 	// request callback
 	public interface RequestListener<T> {
