@@ -3,6 +3,7 @@ package com.toraysoft.tools.rest.header;
 import java.text.NumberFormat;
 import java.util.Map;
 
+import android.content.Context;
 import android.text.TextUtils;
 
 import com.toraysoft.tools.rest.RestHeader;
@@ -22,6 +23,9 @@ public class CommonHeader extends RestHeader {
 	private String username = "";
 	private String schema = "";
 	private String clientVersion = "";
+	private String clientChannel = "";
+	private String clientDeviceID = "";
+	private String clientPackage = "";
 
 	private String apiVersion = "1";
 
@@ -72,8 +76,11 @@ public class CommonHeader extends RestHeader {
 		headers.put(getHeaderKey("API-KEY"), key);
 		headers.put(getHeaderKey("API-TIMESTAMP"), time);
 		headers.put(getHeaderKey("API-VERSION"), apiVersion);
-		headers.put(getHeaderKey("CLIENT-OS"), "android");
-		headers.put(getHeaderKey("CLIENT-VERSION"), clientVersion);
+		headers.put("X-CLIENT-OS", "android");
+		headers.put("X-CLIENT-VERSION", clientVersion);
+		headers.put("X-CLIENT-DEVICE-ID", clientDeviceID);
+		headers.put("X-CLIENT-CHANNEL", clientChannel);
+		headers.put("X-CLIENT-PACKAGE", clientPackage);
 
 		String sign = key + "&" + secret + "&" + apiVersion + "&" + time;
 
@@ -104,6 +111,18 @@ public class CommonHeader extends RestHeader {
 
 	public String getUsername() {
 		return username;
+	}
+
+	public void setClientChannel(String clientChannel) {
+		this.clientChannel = clientChannel;
+	}
+
+	public void setClientDeviceID(String clientDeviceID) {
+		this.clientDeviceID = clientDeviceID;
+	}
+
+	public void setClientPackage(String clientPackage) {
+		this.clientPackage = clientPackage;
 	}
 
 }
