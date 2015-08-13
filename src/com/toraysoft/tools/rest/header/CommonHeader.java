@@ -1,10 +1,12 @@
 package com.toraysoft.tools.rest.header;
 
 import java.text.NumberFormat;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
-import android.content.Context;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.toraysoft.tools.rest.RestHeader;
 import com.toraysoft.utils.encrypt.Base64;
@@ -81,7 +83,6 @@ public class CommonHeader extends RestHeader {
 		headers.put("X-CLIENT-DEVICE-ID", clientDeviceID);
 		headers.put("X-CLIENT-CHANNEL", clientChannel);
 		headers.put("X-CLIENT-PACKAGE", clientPackage);
-
 		String sign = key + "&" + secret + "&" + apiVersion + "&" + time;
 
 		headers.put(getHeaderKey("API-SIGNATURE"),
@@ -98,6 +99,12 @@ public class CommonHeader extends RestHeader {
 			auth = "signature " + auth;
 			headers.put("AUTHORIZATION", auth);
 		}
+		  Set  set=headers.entrySet();  
+          Iterator   iterator=set.iterator();  
+          while (iterator.hasNext()) {  
+            Map.Entry  mapentry = (Map.Entry) iterator.next();  
+            System.out.println(mapentry.getKey()+">>>>>>>>"+ mapentry.getValue());  
+          }  
 		return super.toMap();
 	}
 

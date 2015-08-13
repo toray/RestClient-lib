@@ -2,6 +2,8 @@ package com.toraysoft.tools.rest;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.security.spec.KeySpec;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.json.JSONArray;
@@ -99,7 +101,7 @@ public class RestRequest {
 		@SuppressWarnings("unchecked")
 		@Override
 		protected Response<T> parseNetworkResponse(NetworkResponse response) {
-			
+
 			String resp_data = (new String(response.data)).trim();
 			if (resp_data.startsWith("[") && resp_data.endsWith("]")) {
 				try {
@@ -117,9 +119,17 @@ public class RestRequest {
 				try {
 					String jsonString = new String(response.data,
 							HttpHeaderParser.parseCharset(response.headers));
-					return (Response<T>) Response.success(new JSONObject(
-							jsonString), HttpHeaderParser
-							.parseCacheHeaders(response));
+					JSONObject resp = new JSONObject(jsonString);
+					Iterator<String> keys = resp.keys();
+					while (keys.hasNext()) {
+						String key = keys.next();
+						Object val = resp.get(key);
+						if (val instanceof String && "null".equals(val)) {
+							resp.put(key, null);
+						}
+					}
+					return (Response<T>) Response.success(resp,
+							HttpHeaderParser.parseCacheHeaders(response));
 				} catch (UnsupportedEncodingException e) {
 					return Response.error(new ParseError(e));
 				} catch (JSONException je) {
@@ -195,8 +205,8 @@ public class RestRequest {
 
 				for (String key : this.params.toMap().keySet()) {
 					try {
-						String value = URLEncoder.encode(this.params.get(key).toString(),
-								"UTF-8");
+						String value = URLEncoder.encode(this.params.get(key)
+								.toString(), "UTF-8");
 						if (sb.toString().indexOf("?") == -1) {
 							sb.append("?");
 						} else {
